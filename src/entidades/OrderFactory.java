@@ -10,6 +10,9 @@ public static Order createOrder(int quantidade, double valor, String corretora, 
             
         case VENDA:
             return new Venda(quantidade, valor, corretora);
+
+        case INFO:
+            return new Info(quantidade, valor, corretora);
             
         default:
             throw new ExcecaoTipoOrdemInvalido(tipo);

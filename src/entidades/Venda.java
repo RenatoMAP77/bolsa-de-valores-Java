@@ -13,32 +13,32 @@ public class Venda implements Order {
         this.tipo = OrderEnum.VENDA;
     }
 
-    @Override
+    
     public void setValor(double valor) {
         this.valor = valor;
     }
-    @Override
+    
     public void setQuantidade(int quantidade) {
         this.quantidade = quantidade;
     }
-    @Override
+    
     public void setBroker(String broker) {
         this.broker = broker;
     }
     
-    @Override
+    
     public double getValor() {
         return this.valor;
     }
-    @Override
+    
     public int getQuantidade() {
         return this.quantidade;
     }
-    @Override
+    
     public String getBroker() {
         return this.broker;
     }
-    @Override
+    
     public OrderEnum getTipo() {
         return this.tipo;
     }

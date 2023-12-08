@@ -8,18 +8,19 @@ import exceptions.ExcecaoNomeInvalido;
 public class Transaction {
     private int quantidade;
     private double valor;
-    private String corretora;
-    private String tipo;
+    
     private LocalDateTime data_hora;
     private String nomeAcao;
+    private Order Compra;
+    private Order Venda;
 
-    public Transaction(int quantidade, double valor, String corretora, String tipo, String nomeAcao) throws ExcecaoNomeInvalido {
+    public Transaction(int quantidade, double valor, String nomeAcao, Order Compra, Order Venda) throws ExcecaoNomeInvalido {
         setQuantidade(quantidade);
         setValor(valor);
-        setCorretora(corretora);
-        setTipo(tipo);
-        setDataHora(LocalDateTime.now());
         setNomeAcao(nomeAcao);
+        setCompra(Compra);
+        setVenda(Venda);
+        setDataHora(LocalDateTime.now());
     }
 
     private void setNomeAcao(String nomeAcao) throws ExcecaoNomeInvalido {
@@ -40,37 +41,41 @@ public class Transaction {
     private void setQuantidade(int quantidade) {
         this.quantidade = quantidade;
     }
-
-    private void setCorretora(String corretora) {
-        this.corretora = corretora;
-    }
-
-    private void setTipo(String tipo) {
-        this.tipo = tipo;
-    }
-
+ 
     private void setDataHora(LocalDateTime data_hora) {
         this.data_hora = data_hora;
     }
 
     public int getQuantidade() {
-        return quantidade;
+        return this.quantidade;
     }
 
     public double getValor() {
-        return valor;
-    }
-
-    public String getCorretora() {
-        return corretora;
-    }
-
-    public String getTipo() {
-        return tipo;
+        return this.valor;
     }
 
     public LocalDateTime getData_hora() {
-        return data_hora;
+        return this.data_hora;
+    }
+
+    public void setData_hora(LocalDateTime data_hora) {
+        this.data_hora = data_hora;
+    }
+
+    public Order getCompra() {
+        return this.Compra;
+    }
+
+    public void setCompra(Order compra) {
+        this.Compra = compra;
+    }
+
+    public Order getVenda() {
+        return this.Venda;
+    }
+
+    public void setVenda(Order venda) {
+        this.Venda = venda;
     }
 
     @Override
@@ -81,8 +86,8 @@ public class Transaction {
         return "Transação [Ação: "+ nomeAcao 
                 +", quantidade=" + quantidade + 
                 ", valor=" + valor + 
-                ", corretora=" + corretora + 
-                ", tipo="+ tipo + 
+                ", broker Vendedor=" + Venda.getBroker() + 
+                ", broker Comprador=" + Compra.getBroker() +
                 ", data_hora=" + dataFormatada + "]";
     }
 }

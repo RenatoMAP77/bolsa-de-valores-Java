@@ -53,10 +53,10 @@ public class BolsaDeValores2 {
     }
 
     // Processa e notifica sobre uma ordem de venda.
-    public void processSellOrder(SellOrder order) {
+    public void processSellOrder(Order ordemVenda) {
         // Processamento da ordem...
-        Transaction update = new Transaction("Venda", order.getStock(), order.getPrice(), order.getQuantity());
-        notifyObservers(order.getStock(), update);
+        Transaction update = new Transaction("Venda", ordemVenda.getStock(), ordemVenda.getPrice(), ordemVenda.getQuantity());
+        notifyObservers(ordemVenda.getStock(), update);
     }
 
     // Outros métodos...
