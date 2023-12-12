@@ -1,9 +1,10 @@
 package exceptions;
 
-import entidades.OrderEnum;
+
+import entidades.ordem.TipoOrdemEnum;
 
 public class ExcecaoTipoOrdemInvalido extends Exception {
-    public ExcecaoTipoOrdemInvalido(Enum<OrderEnum> tipo) {
+    public ExcecaoTipoOrdemInvalido(Enum<TipoOrdemEnum> tipo) {
         super("Tipo de ordem: "+ tipo +" não presente no sistema! ");
     }
     
