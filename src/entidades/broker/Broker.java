@@ -12,50 +12,78 @@ import entidades.ordem.OrdemTransacional;
 import entidades.transacao.Transacao;
 import exceptions.ExcecaoNomeInvalido;
 
+/**
+ * Representa um corretor que pode enviar ordens para a Bolsa de Valores.
+ */
 public class Broker implements Observer {
     private String name;
     private Set<Observable> observando;
 
+    /**
+     * Construtor da classe.
+     * @param name Nome do corretor.
+     */
     public Broker(String name) {
         this.name = name;
         observando = new HashSet<>();
     }
+
+    /**
+     * Inscreve-se em um objeto observável.
+     *
+     * @param o Objeto observável
+     */
     @Override
-    public void subscribe(Observable o){
+    public void subscribe(Observable o) {
         o.addObserver(this);
         observando.add(o);
     }
+
+    /**
+     * Cancela a inscrição em um objeto observável.
+     *
+     * @param o Objeto observável
+     */
     @Override
-    public void unsubscribe(Observable o){
+    public void unsubscribe(Observable o) {
         o.removeObserver(this);
         observando.remove(o);
     }
-    public void enviarOrdem(Ordem o, BolsaDeValores bolsa) throws ExcecaoNomeInvalido{
-        bolsa.inscreverOrdem((OrdemTransacional) o);
+    /**
+     * Envia uma ordem para a Bolsa de Valores.
+     *
+     * @param o     Ordem a ser enviada
+     * @param bolsa Bolsa de Valores
+     * @throws ExcecaoNomeInvalido Se o nome for inválido
+     */
+    public void enviarOrdem(Ordem o, BolsaDeValores bolsa) throws ExcecaoNomeInvalido {
+        bolsa.inscreverOrdem((OrdemTransacional) o, this);
 
     }
-
+    /**
+     * Atualiza o corretor com uma notificação.
+     *
+     * @param notificacao Notificação a ser exibida
+     */
     @Override
     public void update(Notificacao notificacao) {
-        if (notificacao instanceof OrdemTransacional) {
-            OrdemTransacional ordem = (OrdemTransacional) notificacao;
-            System.out.println("Nova ordem adicionada!"
-                    +" Tipo" + ordem.getTipoOrdem() 
-                    + ", Quantidade: " + ordem.getQuantidade() 
-                    + ", Valor: " + ordem.getValor() 
-                    + ", Ação: " + ordem.getAcao() 
-                    + ", Broker: " + ordem.getBroker());
-        }
-        else if (notificacao instanceof Transacao) {
-            Transacao transacao = (Transacao) notificacao;
-            System.out.println("Nova transação realizada!"
-                    +" Quantidade: " + transacao.getQuantidade() 
-                    + ", Valor: " + transacao.getValor() 
-                    + ", Ação: " + transacao.getNomeAcao() 
-                    + ", Comprador: " + transacao.getCompra().getBroker() 
-                    + ", Vendedor: "+ transacao.getVenda().getBroker());
-            
-        }
+        notificacao.exibirDetalhes();
     }
-    
+    /**
+     * Obtém o nome do corretor.
+     *
+     * @return Nome do corretor
+     */
+    public String getName() {
+        return name;
+    }
+    /**
+     * Define o nome do corretor.
+     *
+     * @param name Novo nome do corretor
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
 }

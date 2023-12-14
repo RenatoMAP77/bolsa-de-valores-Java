@@ -3,11 +3,12 @@ package entidades.transacao;
 import java.time.LocalDateTime;
 
 import exceptions.ExcecaoNomeInvalido;
-import entidades.*;
+
 import entidades.acao.AcaoEnum;
+import entidades.broker.Broker;
 import entidades.interfaces.Notificacao;
 import entidades.ordem.Compra;
-import entidades.ordem.Ordem;
+
 import entidades.ordem.Venda;
 
 public class Transacao implements Notificacao {
@@ -27,10 +28,17 @@ public class Transacao implements Notificacao {
         setDataHora(LocalDateTime.now());
     }
 
+    /** 
+     * @return int
+     */
     public int getQuantidade() {
         return quantidade;
     }
 
+    
+    /** 
+     * @param quantidade
+     */
     public void setQuantidade(int quantidade) {
         this.quantidade = quantidade;
     }
@@ -73,5 +81,17 @@ public class Transacao implements Notificacao {
 
     public void setVenda(Venda venda) {
         this.venda = venda;
+    }
+
+    @Override
+    public void exibirDetalhes() {
+        System.out.println("------------------------------");
+       // System.out.println("Prezado :" + b.getName());
+        System.out.println("Nova transação realizada!"
+                + " Quantidade: " + getQuantidade()
+                + ", Valor: " + getValor()
+                + ", Ação: " + getNomeAcao()
+                + ", Comprador: " + getCompra().getBroker()
+                + ", Vendedor: " + getVenda().getBroker());
     }
 }

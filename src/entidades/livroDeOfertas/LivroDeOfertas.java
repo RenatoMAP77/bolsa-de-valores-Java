@@ -1,121 +1,159 @@
 package entidades.livroDeOfertas;
+
 import java.util.*;
 
 import entidades.interfaces.Notificacao;
 import entidades.interfaces.Observable;
 import entidades.interfaces.Observer;
 import entidades.ordem.Compra;
-import entidades.ordem.Ordem;
+
 import entidades.ordem.OrdemTransacional;
 import entidades.ordem.TipoOrdemEnum;
 import entidades.ordem.Venda;
 import entidades.transacao.Transacao;
 import exceptions.ExcecaoNomeInvalido;
 
-public class LivroDeOfertas implements Observable{
-    private Map<Double, List<OrdemTransacional>> ordensCompra;
-    private Map<Double, List<OrdemTransacional>> ordensVenda;
+/**
+ * Representa um livro de ofertas, onde as ordens são registradas e podem ser
+ * observadas por corretores.
+ */
+public class LivroDeOfertas implements Observable {
+    private Map<Double, List<Compra>> ordensCompra;
+    private Map<Double, List<Venda>> ordensVenda;
     public Set<Observer> brokersObservadores;
     public List<Transacao> transacoes;
-    // Construtor da Classe
+
+    /**
+     * Construtor da classe.
+     */
     public LivroDeOfertas() {
         this.ordensCompra = new TreeMap<>(Collections.reverseOrder());
         this.ordensVenda = new TreeMap<>();
         this.brokersObservadores = new HashSet<>();
         this.transacoes = new ArrayList<>();
     }
-    // Métodos da Classe
+
+    /**
+     * Inscreve uma ordem no livro de ofertas.
+     *
+     * @param ordem Ordem a ser inscrita
+     * @throws ExcecaoNomeInvalido Se o nome for inválido
+     */
     public void inscreverOrdem(OrdemTransacional ordem) throws ExcecaoNomeInvalido {
-        if (ordem.getTipoOrdem() == TipoOrdemEnum.COMPRA) {
-            ordensCompra.computeIfAbsent(ordem.getValor(), k -> new ArrayList<>()).add(ordem);
-        } else {
-            ordensVenda.computeIfAbsent(ordem.getValor(), k -> new ArrayList<>()).add(ordem);
-        }
+        ordem.processarOrdem(ordensCompra, ordensVenda);
         notificarObservers(ordem);
         checarPossivelTransacao();
     }
+
+    /**
+     * Notifica os observadores com uma determinada notificação.
+     *
+     * @param notificacao Notificação a ser enviada aos observadores
+     */
     @Override
     public void notificarObservers(Notificacao notificacao) {
         for (Observer broker : brokersObservadores) {
             broker.update(notificacao);
         }
     }
-   @Override
+
+    /**
+     * Adiciona um observador ao livro de ofertas.
+     *
+     * @param broker Observador a ser adicionado
+     */
+    @Override
     public void addObserver(Observer broker) {
         brokersObservadores.add(broker);
     }
+
+    /**
+     * Remove um observador do livro de ofertas.
+     *
+     * @param broker Observador a ser removido
+     */
     @Override
     public void removeObserver(Observer broker) {
         brokersObservadores.remove(broker);
     }
-    // Priorizar oferta de compra de maior valor primeiro, comprando sempre a de menor valor disponível.
+
+    /**
+     * Verifica se é possível realizar uma transação.
+     *
+     * @throws ExcecaoNomeInvalido Se o nome for inválido
+     */
     public void checarPossivelTransacao() throws ExcecaoNomeInvalido {
-    
-        // Pegar o maior double disponível para ordens de compra
+
         Double maiorValorCompra = ordensCompra.keySet().stream().max(Double::compare).orElse(null);
-    
-        // Pegar o menor double disponível para ordens de venda
+
         Double menorValorVenda = ordensVenda.keySet().stream().min(Double::compare).orElse(null);
-    
-        // Verificar se existem ordens de compra e venda
         if (maiorValorCompra != null && menorValorVenda != null) {
-            // Verificar se é possível realizar uma transação
             if (maiorValorCompra >= menorValorVenda) {
-                // Verificar se existem ordens de compra para o maior valor
-                List<OrdemTransacional> ordensCompraParaMaiorValor = ordensCompra.get(maiorValorCompra);
+                List<Compra> ordensCompraParaMaiorValor = ordensCompra.get(maiorValorCompra);
                 if (ordensCompraParaMaiorValor != null && !ordensCompraParaMaiorValor.isEmpty()) {
-                    // Pegar a primeira ordem de compra disponível
-                    OrdemTransacional compra = ordensCompraParaMaiorValor.get(0);
-    
+                    Compra compra = ordensCompraParaMaiorValor.get(0);
+
                     // Verificar se existem ordens de venda para o menor valor
-                    List<OrdemTransacional> ordensVendaParaMenorValor = ordensVenda.get(menorValorVenda);
+                    List<Venda> ordensVendaParaMenorValor = ordensVenda.get(menorValorVenda);
                     if (ordensVendaParaMenorValor != null && !ordensVendaParaMenorValor.isEmpty()) {
-                        // Pegar a primeira ordem de venda disponível
-                        OrdemTransacional venda = ordensVendaParaMenorValor.get(0);
-    
-                        // Realizar a transação
+                        Venda venda = ordensVendaParaMenorValor.get(0);
                         try {
                             realizarTransacao(compra, venda);
                         } catch (ExcecaoNomeInvalido e) {
-                            e.printStackTrace(); // Trate a exceção de acordo com sua lógica
+                            e.getMessage(); 
                         }
                     }
                 }
             }
         }
     }
-    
-    
-    
-    
-    
-    private void realizarTransacao(OrdemTransacional compra, OrdemTransacional venda) throws ExcecaoNomeInvalido {
+
+    /**
+     * Realiza uma transação.
+     *
+     * @param compra Ordem de compra
+     * @param venda  Ordem de venda
+     * @throws ExcecaoNomeInvalido Se o nome for inválido
+     */
+    private void realizarTransacao(Compra compra, Venda venda) throws ExcecaoNomeInvalido {
         int quantidadeTransacionada = Math.min(compra.getQuantidade(), venda.getQuantidade());
         double valorTransacao = venda.getValor();
-    
+
         Transacao transacao = new Transacao(quantidadeTransacionada, valorTransacao, compra.getAcao(),
-                (Compra) compra, (Venda) venda);
-    
+                compra, venda);
+
         transacoes.add(transacao);
         notificarObservers(transacao);
-    
-        // Atualizar quantidades nas ordens de compra e venda
-        ((Compra) compra).compraSuperiorQtdeCompra(quantidadeTransacionada);
-        ((Venda) venda).vendaSuperiorQtdeCompra(quantidadeTransacionada);
-    
-        // Remover ordens com quantidade zero
-        if (((Compra) compra).getQuantidade() == 0) {
+
+        
+        compra.compraSuperiorQtdeCompra(quantidadeTransacionada);
+        venda.vendaSuperiorQtdeCompra(quantidadeTransacionada);
+
+        
+        if (compra.getQuantidade() == 0) {
             ordensCompra.get(compra.getValor()).remove(compra);
             if (ordensCompra.get(compra.getValor()).isEmpty()) {
                 ordensCompra.remove(compra.getValor());
             }
         }
-    
-        if (((Venda) venda).getQuantidade() == 0) {
+
+        if (venda.getQuantidade() == 0) {
             ordensVenda.get(venda.getValor()).remove(venda);
             if (ordensVenda.get(venda.getValor()).isEmpty()) {
                 ordensVenda.remove(venda.getValor());
             }
         }
-    }}
-    
+    }
+
+    /*
+     * Getters e setters
+     */
+    public Set<Observer> getBrokersObservadores() {
+        return brokersObservadores;
+    }
+
+    public void setBrokersObservadores(Set<Observer> brokersObservadores) {
+        this.brokersObservadores = brokersObservadores;
+    }
+
+}
